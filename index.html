@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>OrbitRun — Manual Test Execution</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-dot"></div>
+    OrbitRun
+  </div>
+  
+  <div class="topbar-actions">
+
+    <button class="btn" id="theme-toggle-btn">
+  ☀️ Light
+</button>
+
+<!-- <button class="btn" id="theme-toggle-btnnn">
+  <svg id="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <circle cx="12" cy="12" r="5"></circle>
+    <line x1="12" y1="1" x2="12" y2="3"></line>
+    <line x1="12" y1="21" x2="12" y2="23"></line>
+    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+    <line x1="1" y1="12" x2="3" y2="12"></line>
+    <line x1="21" y1="12" x2="23" y2="12"></line>
+    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+  </svg>
+  Theme
+</button> -->
+
+
+    <button class="btn" id="import-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Import Excel
+    </button>
+    <button class="btn" id="export-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export Results
+    </button>
+    <button class="btn btn-danger" id="reset-all-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1,4 1,10 7,10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+      Reset All
+    </button>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Import</div>
+      <label class="upload-zone" for="file-input" id="drop-zone">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+          <polyline points="14,2 14,8 20,8"/>
+          <path d="M12 13v6m-3-3l3 3 3-3"/>
+        </svg>
+        <strong>Drop Excel file</strong>
+        <p>or click to browse<br/>.xlsx / .xls</p>
+      </label>
+      <input type="file" id="file-input" accept=".xlsx,.xls,.csv" />
+    </div>
+
+    <div class="sidebar-section" id="suites-section" style="display:none">
+      <div class="sidebar-label">Test Suites</div>
+      <div id="suites-list"></div>
+    </div>
+
+    <div class="sidebar-section" id="sidebar-progress" style="display:none">
+      <div class="sidebar-label">Run Progress</div>
+      <div class="mini-prog">
+        <div class="mini-prog-bar">
+          <div class="mini-prog-seg prog-pass" id="mini-pass-bar" style="width:0%"></div>
+          <div class="mini-prog-seg prog-fail" id="mini-fail-bar" style="width:0%"></div>
+          <div class="mini-prog-seg prog-skip" id="mini-skip-bar" style="width:0%"></div>
+        </div>
+      </div>
+      <div style="margin-top:10px; font-size:12px; color:var(--text2); line-height:1.8;">
+        <div style="display:flex;justify-content:space-between"><span>Pass</span><span id="sp-pass" style="color:var(--pass);font-family:var(--font-mono)">0</span></div>
+        <div style="display:flex;justify-content:space-between"><span>Fail</span><span id="sp-fail" style="color:var(--fail);font-family:var(--font-mono)">0</span></div>
+        <div style="display:flex;justify-content:space-between"><span>Skip</span><span id="sp-skip" style="color:var(--skip);font-family:var(--font-mono)">0</span></div>
+        <div style="display:flex;justify-content:space-between"><span>Pending</span><span id="sp-pending" style="color:var(--pending);font-family:var(--font-mono)">0</span></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+      <div class="dashboard-title" id="dash-title">Test Execution Dashboard</div>
+      <div class="dashboard-subtitle" id="dash-subtitle">Import an Excel file to start executing test cases</div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card stat-total">
+        <div class="stat-label">TOTAL</div>
+        <div class="stat-value" id="st-total">0</div>
+        <div class="stat-sub">test cases</div>
+      </div>
+      <div class="stat-card stat-pass">
+        <div class="stat-label">PASSED</div>
+        <div class="stat-value" id="st-pass">0</div>
+        <div class="stat-sub" id="st-pass-pct">—</div>
+      </div>
+      <div class="stat-card stat-fail">
+        <div class="stat-label">FAILED</div>
+        <div class="stat-value" id="st-fail">0</div>
+        <div class="stat-sub" id="st-fail-pct">—</div>
+      </div>
+      <div class="stat-card stat-skip">
+        <div class="stat-label">SKIPPED</div>
+        <div class="stat-value" id="st-skip">0</div>
+        <div class="stat-sub" id="st-skip-pct">—</div>
+      </div>
+      <div class="stat-card stat-pending">
+        <div class="stat-label">PENDING</div>
+        <div class="stat-value" id="st-pending">0</div>
+        <div class="stat-sub" id="st-pending-pct">—</div>
+      </div>
+    </div>
+
+    <!-- Progress bar -->
+    <div class="progress-section">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <span style="font-size:12px; color:var(--text3);">Execution Progress</span>
+        <span id="prog-pct-text" style="font-size:12px; color:var(--text2); font-family:var(--font-mono);">0 / 0 executed</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill prog-pass" id="prog-pass" style="width:0%"></div>
+        <div class="progress-fill prog-fail" id="prog-fail" style="width:0%"></div>
+        <div class="progress-fill prog-skip" id="prog-skip" style="width:0%"></div>
+      </div>
+      <div class="progress-labels">
+        <div class="prog-label"><div class="prog-dot" style="background:var(--pass)"></div>Pass</div>
+        <div class="prog-label"><div class="prog-dot" style="background:var(--fail)"></div>Fail</div>
+        <div class="prog-label"><div class="prog-dot" style="background:var(--skip)"></div>Skip</div>
+        <div class="prog-label"><div class="prog-dot" style="background:var(--pending)"></div>Pending</div>
+      </div>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="filter-bar">
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input class="search-input" id="search-input" type="text" placeholder="Search test cases..." />
+      </div>
+      <div class="filter-chip active" data-filter="all">All</div>
+      <div class="filter-chip pending-chip" data-filter="pending">Pending</div>
+      <div class="filter-chip pass-chip" data-filter="pass">Pass</div>
+      <div class="filter-chip fail-chip" data-filter="fail">Fail</div>
+      <div class="filter-chip skip-chip" data-filter="skip">Skip</div>
+    </div>
+
+    <!-- Table + Detail panel wrapper -->
+    <div style="display:flex; flex:1; overflow:hidden;">
+
+      <!-- Table -->
+      <div class="table-wrap" id="table-wrap">
+        <div class="empty-state" id="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+            <polyline points="14,2 14,8 20,8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10,9 9,9 8,9"/>
+          </svg>
+          <h3>No test cases loaded</h3>
+          <p>Import an Excel file to get started. Your spreadsheet should have columns like ID, Title, Module, Priority, Steps, and Expected Result.</p>
+          <button class="btn btn-primary" onclick="document.getElementById('file-input').click()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Import Excel
+          </button>
+        </div>
+
+        <table class="test-table" id="test-table" style="display:none">
+          <thead>
+            <tr>
+              <th class="col-id">ID</th>
+              <th class="col-title">Test Case</th>
+              <th class="col-module">Module</th>
+              <th class="col-priority">Priority</th>
+              <th class="col-status">Status</th>
+              <th class="col-actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+
+      <!-- Detail Panel -->
+      <div class="detail-panel hidden" id="detail-panel">
+        <div class="detail-header">
+          <div>
+            <div class="detail-tc-id" id="dp-id">TC-001</div>
+            <div class="detail-tc-title" id="dp-title">Test case title</div>
+          </div>
+          <button class="close-btn" id="close-detail">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+
+        <div class="detail-section" id="dp-meta-section">
+          <div class="detail-section-label">Details</div>
+          <div id="dp-meta"></div>
+        </div>
+
+        <div class="detail-section" id="dp-steps-section" style="display:none">
+          <div class="detail-section-label">Steps</div>
+          <div class="steps-list" id="dp-steps"></div>
+        </div>
+
+        <div class="detail-section" id="dp-expected-section" style="display:none">
+          <div class="detail-section-label">Expected Result</div>
+          <div class="detail-field-value" id="dp-expected" style="font-size:13px;color:var(--text2);line-height:1.6;"></div>
+        </div>
+
+        <div class="detail-section">
+          <div class="detail-section-label">Notes / Bug Reference</div>
+          <textarea class="notes-area" id="dp-notes" placeholder="Add notes, bug ID, or observations..."></textarea>
+        </div>
+
+        <div style="padding: 0 1.5rem 0.5rem;">
+          <div style="font-size:10px;font-family:var(--font-mono);letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:8px;">Mark Result</div>
+        </div>
+        <div class="big-actions">
+          <button class="big-act-btn big-pass" id="dp-pass">✓ Pass</button>
+          <button class="big-act-btn big-fail" id="dp-fail">✗ Fail</button>
+          <button class="big-act-btn big-skip" id="dp-skip">— Skip</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Export bar -->
+    <div class="export-bar" id="export-bar" style="display:none">
+      <span>Export:</span>
+      <button class="btn" id="export-excel-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>
+        Excel Report
+      </button>
+      <button class="btn" id="export-csv-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+        CSV
+      </button>
+      <div style="margin-left:auto; font-size:12px; color:var(--text3);" id="last-saved"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- Column mapping modal -->
+<div class="modal-overlay" id="col-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Map Excel Columns</div>
+      <button class="close-btn" onclick="document.getElementById('col-modal').classList.remove('open')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--text2);margin-bottom:1.5rem;line-height:1.6;">We found the following columns. Map them to the required fields:</p>
+      <div id="col-map-fields"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="document.getElementById('col-modal').classList.remove('open')">Cancel</button>
+      <button class="btn btn-primary" id="col-confirm-btn">Load Test Cases</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---- STATE ----
+let testCases = [];
+let currentFilter = 'all';
+let currentSearch = '';
+let activeSuite = 'all';
+let selectedTc = null;
+let rawHeaders = [];
+let rawData = [];
+let colMapping = {};
+
+// ---- UTILS ----
+function toSlug(s) { return (s||'').toLowerCase().trim(); }
+function showToast(msg, type) {
+  const ct = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  const icons = { pass: '✓', fail: '✗', skip: '—', info: 'ℹ' };
+  t.innerHTML = `<span style="color:var(--${type})">${icons[type]||'•'}</span> ${msg}`;
+  ct.appendChild(t);
+  setTimeout(() => t.remove(), 3200);
+}
+
+// ---- FILE HANDLING ----
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) handleFile(file);
+});
+fileInput.addEventListener('change', e => {
+  if (e.target.files[0]) handleFile(e.target.files[0]);
+});
+document.getElementById('import-btn').addEventListener('click', () => fileInput.click());
+
+function handleFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const data = new Uint8Array(e.target.result);
+    const wb = XLSX.read(data, { type: 'array' });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const json = XLSX.utils.sheet_to_json(ws, { header: 1 });
+    if (json.length < 2) { showToast('File appears empty', 'fail'); return; }
+    rawHeaders = json[0].map(h => String(h||'').trim());
+    rawData = json.slice(1).filter(row => row.some(c => c !== undefined && c !== ''));
+    showColumnMapper();
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// ---- COLUMN MAPPER ----
+const FIELDS = [
+  { key: 'id',       label: 'Test Case ID', required: false },
+  { key: 'title',    label: 'Title / Name',  required: true  },
+  { key: 'module',   label: 'Module / Suite', required: false },
+  { key: 'priority', label: 'Priority',      required: false },
+  { key: 'steps',    label: 'Test Steps',    required: false },
+  { key: 'expected', label: 'Expected Result', required: false },
+  { key: 'precond',  label: 'Preconditions', required: false },
+];
+
+function guessMapping(headers) {
+  const map = {};
+  const matchers = {
+    id:       [/id/i, /tc.?id/i, /case.?id/i, /test.?id/i, /no\b/i, /sr\.?no/i],
+    title:    [/title/i, /name/i, /test.?case/i, /description/i, /test.?name/i],
+    module:   [/module/i, /suite/i, /feature/i, /section/i, /area/i, /component/i],
+    priority: [/priority/i, /sev/i, /importance/i, /level/i],
+    steps:    [/step/i, /action/i, /procedure/i, /instruction/i],
+    expected: [/expected/i, /result/i, /outcome/i, /output/i],
+    precond:  [/precond/i, /pre.?req/i, /prerequisite/i, /setup/i],
+  };
+  for (const [field, patterns] of Object.entries(matchers)) {
+    for (const [i, h] of headers.entries()) {
+      if (patterns.some(p => p.test(h))) { map[field] = i; break; }
+    }
+  }
+  return map;
+}
+
+function showColumnMapper() {
+  const guessed = guessMapping(rawHeaders);
+  const container = document.getElementById('col-map-fields');
+  container.innerHTML = '';
+  FIELDS.forEach(f => {
+    const val = guessed[f.key] !== undefined ? guessed[f.key] : '';
+    container.innerHTML += `
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+        <label style="font-size:13px;color:var(--text);width:160px;flex-shrink:0;">${f.label}${f.required?' <span style="color:var(--fail)">*</span>':''}</label>
+        <select id="map-${f.key}" style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:6px 10px;font-size:13px;color:var(--text);font-family:var(--font-body);outline:none;">
+          <option value="">— Not mapped —</option>
+          ${rawHeaders.map((h,i) => `<option value="${i}" ${i==val?'selected':''}>${h}</option>`).join('')}
+        </select>
+      </div>`;
+  });
+  document.getElementById('col-modal').classList.add('open');
+}
+
+document.getElementById('col-confirm-btn').addEventListener('click', () => {
+  colMapping = {};
+  for (const f of FIELDS) {
+    const v = document.getElementById(`map-${f.key}`).value;
+    if (v !== '') colMapping[f.key] = parseInt(v);
+  }
+  if (colMapping.title === undefined) { showToast('Please map the Title column', 'fail'); return; }
+  document.getElementById('col-modal').classList.remove('open');
+  loadTestCases();
+});
+
+// ---- LOAD TEST CASES ----
+function loadTestCases() {
+  testCases = rawData.map((row, idx) => {
+    const get = key => colMapping[key] !== undefined ? String(row[colMapping[key]] || '') : '';
+    return {
+      _idx: idx,
+      id:       get('id') || `TC-${String(idx+1).padStart(3,'0')}`,
+      title:    get('title') || '(untitled)',
+      module:   get('module') || 'General',
+      priority: normalizePriority(get('priority')),
+      steps:    get('steps'),
+      expected: get('expected'),
+      precond:  get('precond'),
+      status:   'pending',
+      notes:    '',
+      executedAt: null,
+    };
+  });
+
+  document.getElementById('suites-section').style.display = '';
+  document.getElementById('sidebar-progress').style.display = '';
+  document.getElementById('export-bar').style.display = '';
+  document.getElementById('dash-title').textContent = 'Test Execution Dashboard';
+  document.getElementById('dash-subtitle').textContent = `${testCases.length} test cases loaded · ${new Set(testCases.map(t=>t.module)).size} modules`;
+
+  activeSuite = 'all';
+  renderSuites();
+  renderTable();
+  updateStats();
+  showToast(`${testCases.length} test cases loaded`, 'info');
+}
+
+function normalizePriority(p) {
+  const s = toSlug(p);
+  if (!p || p==='') return 'medium';
+  if (s.includes('high') || s==='h' || s==='1') return 'high';
+  if (s.includes('low') || s==='l' || s==='3') return 'low';
+  return 'medium';
+}
+
+// ---- SUITES ----
+function renderSuites() {
+  const modules = [...new Set(testCases.map(t=>t.module))];
+  const list = document.getElementById('suites-list');
+  list.innerHTML = `
+    <div class="suite-item ${activeSuite==='all'?'active':''}" data-suite="all">
+      <span>All Tests</span>
+      <span class="suite-count">${testCases.length}</span>
+    </div>
+    ${modules.map(m => {
+      const count = testCases.filter(t=>t.module===m).length;
+      return `<div class="suite-item ${activeSuite===m?'active':''}" data-suite="${m}">
+        <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${m}</span>
+        <span class="suite-count">${count}</span>
+      </div>`;
+    }).join('')}`;
+  list.querySelectorAll('.suite-item').forEach(el => {
+    el.addEventListener('click', () => {
+      activeSuite = el.dataset.suite;
+      renderSuites();
+      renderTable();
+    });
+  });
+}
+
+// ---- STATS ----
+function updateStats() {
+  const scoped = activeSuite === 'all' ? testCases : testCases.filter(t=>t.module===activeSuite);
+  const total = scoped.length;
+  const pass = scoped.filter(t=>t.status==='pass').length;
+  const fail = scoped.filter(t=>t.status==='fail').length;
+  const skip = scoped.filter(t=>t.status==='skip').length;
+  const pending = scoped.filter(t=>t.status==='pending').length;
+  const executed = pass + fail + skip;
+
+  document.getElementById('st-total').textContent = total;
+  document.getElementById('st-pass').textContent = pass;
+  document.getElementById('st-fail').textContent = fail;
+  document.getElementById('st-skip').textContent = skip;
+  document.getElementById('st-pending').textContent = pending;
+
+  const pct = n => total > 0 ? `${Math.round(n/total*100)}%` : '—';
+  document.getElementById('st-pass-pct').textContent = total>0 ? pct(pass) : '—';
+  document.getElementById('st-fail-pct').textContent = total>0 ? pct(fail) : '—';
+  document.getElementById('st-skip-pct').textContent = total>0 ? pct(skip) : '—';
+  document.getElementById('st-pending-pct').textContent = total>0 ? pct(pending) : '—';
+
+  document.getElementById('prog-pct-text').textContent = `${executed} / ${total} executed`;
+  if (total > 0) {
+    document.getElementById('prog-pass').style.width = (pass/total*100)+'%';
+    document.getElementById('prog-fail').style.width = (fail/total*100)+'%';
+    document.getElementById('prog-skip').style.width = (skip/total*100)+'%';
+  }
+
+  // sidebar mini
+  const allTotal = testCases.length;
+  const aPass = testCases.filter(t=>t.status==='pass').length;
+  const aFail = testCases.filter(t=>t.status==='fail').length;
+  const aSkip = testCases.filter(t=>t.status==='skip').length;
+  const aPending = testCases.filter(t=>t.status==='pending').length;
+  document.getElementById('sp-pass').textContent = aPass;
+  document.getElementById('sp-fail').textContent = aFail;
+  document.getElementById('sp-skip').textContent = aSkip;
+  document.getElementById('sp-pending').textContent = aPending;
+  if (allTotal > 0) {
+    document.getElementById('mini-pass-bar').style.width = (aPass/allTotal*100)+'%';
+    document.getElementById('mini-fail-bar').style.width = (aFail/allTotal*100)+'%';
+    document.getElementById('mini-skip-bar').style.width = (aSkip/allTotal*100)+'%';
+  }
+
+  const now = new Date();
+  document.getElementById('last-saved').textContent = `Last updated ${now.toLocaleTimeString()}`;
+}
+
+// ---- RENDER TABLE ----
+function renderTable() {
+  let items = activeSuite === 'all' ? testCases : testCases.filter(t=>t.module===activeSuite);
+  if (currentFilter !== 'all') items = items.filter(t=>t.status===currentFilter);
+  if (currentSearch.trim()) {
+    const q = currentSearch.toLowerCase();
+    items = items.filter(t =>
+      t.title.toLowerCase().includes(q) ||
+      t.id.toLowerCase().includes(q) ||
+      t.module.toLowerCase().includes(q) ||
+      (t.steps||'').toLowerCase().includes(q)
+    );
+  }
+
+  const empty = document.getElementById('empty-state');
+  const table = document.getElementById('test-table');
+  const tbody = document.getElementById('table-body');
+
+  if (testCases.length === 0) {
+    empty.style.display = ''; table.style.display = 'none'; return;
+  }
+  empty.style.display = 'none'; table.style.display = '';
+
+  tbody.innerHTML = items.map(tc => `
+    <tr class="test-row ${selectedTc && selectedTc._idx===tc._idx?'active-row':''}" data-idx="${tc._idx}">
+      <td class="tc-id">${tc.id}</td>
+      <td>
+        <div class="tc-title">${escHtml(tc.title)}</div>
+        ${tc.precond ? `<div style="font-size:11px;color:var(--text3);margin-top:2px;">Pre: ${escHtml(tc.precond.slice(0,60))}${tc.precond.length>60?'…':''}</div>` : ''}
+      </td>
+      <td class="tc-module">${escHtml(tc.module)}</td>
+      <td><span class="tc-priority pri-${tc.priority}">${tc.priority}</span></td>
+      <td>${statusBadge(tc.status)}</td>
+      <td>
+        <div class="row-actions">
+          <button class="act-btn act-pass" data-action="pass" data-idx="${tc._idx}">Pass</button>
+          <button class="act-btn act-fail" data-action="fail" data-idx="${tc._idx}">Fail</button>
+          <button class="act-btn act-skip" data-action="skip" data-idx="${tc._idx}">Skip</button>
+          <button class="act-btn act-reset" data-action="reset" data-idx="${tc._idx}" title="Reset">↺</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+
+  // Row click → detail
+  tbody.querySelectorAll('.test-row').forEach(row => {
+    row.addEventListener('click', e => {
+      if (e.target.closest('.act-btn')) return;
+      const idx = parseInt(row.dataset.idx);
+      openDetail(testCases[idx]);
+    });
+  });
+
+  // Action buttons
+  tbody.querySelectorAll('.act-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const idx = parseInt(btn.dataset.idx);
+      const action = btn.dataset.action;
+      if (action === 'reset') setStatus(idx, 'pending');
+      else setStatus(idx, action);
+    });
+  });
+}
+
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function statusBadge(status) {
+  const icons = { pass: '✓', fail: '✗', skip: '—', pending: '·' };
+  return `<span class="status-badge badge-${status}">${icons[status]} ${status}</span>`;
+}
+
+// ---- SET STATUS ----
+function setStatus(idx, status) {
+  const tc = testCases[idx];
+  const prev = tc.status;
+  tc.status = status;
+  tc.executedAt = status !== 'pending' ? new Date() : null;
+  if (selectedTc && selectedTc._idx === idx) {
+    selectedTc = tc;
+    updateDetailPanel();
+  }
+  renderTable();
+  renderSuites();
+  updateStats();
+  if (status !== 'pending' && status !== prev) {
+    const msgs = { pass: `${tc.id} marked as PASS`, fail: `${tc.id} marked as FAIL`, skip: `${tc.id} marked as SKIP` };
+    showToast(msgs[status], status);
+    // Auto-advance: open next pending
+    autoAdvance(idx);
+  }
+}
+
+function autoAdvance(idx) {
+  // find next pending in current scope
+  const scope = activeSuite === 'all' ? testCases : testCases.filter(t=>t.module===activeSuite);
+  const nextIdx = scope.findIndex(t => t._idx > idx && t.status === 'pending');
+  if (nextIdx !== -1 && selectedTc) {
+    setTimeout(() => openDetail(scope[nextIdx]), 300);
+  }
+}
+
+// ---- DETAIL PANEL ----
+function openDetail(tc) {
+  selectedTc = tc;
+  updateDetailPanel();
+  document.getElementById('detail-panel').classList.remove('hidden');
+  renderTable();
+}
+
+function updateDetailPanel() {
+  const tc = selectedTc;
+  document.getElementById('dp-id').textContent = tc.id;
+  document.getElementById('dp-title').textContent = tc.title;
+  document.getElementById('dp-notes').value = tc.notes || '';
+
+  // Meta fields
+  const meta = document.getElementById('dp-meta');
+  const fields = [
+    ['Module', tc.module],
+    ['Priority', tc.priority],
+    ['Status', tc.status],
+    tc.executedAt ? ['Executed At', tc.executedAt.toLocaleString()] : null,
+  ].filter(Boolean);
+  meta.innerHTML = fields.map(([l,v]) => `
+    <div class="detail-field">
+      <div class="detail-field-label">${l}</div>
+      <div class="detail-field-value">${l==='Status'?statusBadge(v):escHtml(String(v))}</div>
+    </div>`).join('');
+
+  // Steps
+  const stepsSection = document.getElementById('dp-steps-section');
+  const stepsList = document.getElementById('dp-steps');
+  if (tc.steps && tc.steps.trim()) {
+    stepsSection.style.display = '';
+    const lines = tc.steps.split(/\n|;/).map(s=>s.trim()).filter(Boolean);
+    stepsList.innerHTML = lines.map((s,i) => `
+      <div class="step-item">
+        <div class="step-num">${i+1}.</div>
+        <div>${escHtml(s)}</div>
+      </div>`).join('');
+  } else { stepsSection.style.display = 'none'; }
+
+  // Expected
+  const expSection = document.getElementById('dp-expected-section');
+  if (tc.expected && tc.expected.trim()) {
+    expSection.style.display = '';
+    document.getElementById('dp-expected').textContent = tc.expected;
+  } else { expSection.style.display = 'none'; }
+}
+
+document.getElementById('close-detail').addEventListener('click', () => {
+  selectedTc = null;
+  document.getElementById('detail-panel').classList.add('hidden');
+  renderTable();
+});
+
+// Save notes on blur
+document.getElementById('dp-notes').addEventListener('input', e => {
+  if (selectedTc) { selectedTc.notes = e.target.value; }
+});
+
+// Detail action buttons
+document.getElementById('dp-pass').addEventListener('click', () => {
+  if (selectedTc) setStatus(selectedTc._idx, 'pass');
+});
+document.getElementById('dp-fail').addEventListener('click', () => {
+  if (selectedTc) setStatus(selectedTc._idx, 'fail');
+});
+document.getElementById('dp-skip').addEventListener('click', () => {
+  if (selectedTc) setStatus(selectedTc._idx, 'skip');
+});
+
+// ---- FILTERS ----
+document.querySelectorAll('.filter-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    currentFilter = chip.dataset.filter;
+    renderTable();
+  });
+});
+
+document.getElementById('search-input').addEventListener('input', e => {
+  currentSearch = e.target.value;
+  renderTable();
+});
+
+// ---- RESET ALL ----
+document.getElementById('reset-all-btn').addEventListener('click', () => {
+  if (!testCases.length) return;
+  if (!confirm('Reset all test case results to Pending?')) return;
+  testCases.forEach(tc => { tc.status = 'pending'; tc.notes = ''; tc.executedAt = null; });
+  selectedTc = null;
+  document.getElementById('detail-panel').classList.add('hidden');
+  renderTable();
+  renderSuites();
+  updateStats();
+  showToast('All results reset', 'info');
+});
+
+// ---- EXPORT ----
+document.getElementById('export-btn').addEventListener('click', () => exportExcel());
+document.getElementById('export-excel-btn').addEventListener('click', () => exportExcel());
+document.getElementById('export-csv-btn').addEventListener('click', () => exportCSV());
+
+function getExportData() {
+  return testCases.map(tc => ({
+    'Test ID': tc.id,
+    'Title': tc.title,
+    'Module': tc.module,
+    'Priority': tc.priority,
+    'Status': tc.status.toUpperCase(),
+    'Notes': tc.notes || '',
+    'Executed At': tc.executedAt ? tc.executedAt.toLocaleString() : '',
+    'Steps': tc.steps || '',
+    'Expected Result': tc.expected || '',
+  }));
+}
+
+function exportExcel() {
+  if (!testCases.length) { showToast('No data to export', 'fail'); return; }
+  const wb = XLSX.utils.book_new();
+
+  // Summary sheet
+  const pass = testCases.filter(t=>t.status==='pass').length;
+  const fail = testCases.filter(t=>t.status==='fail').length;
+  const skip = testCases.filter(t=>t.status==='skip').length;
+  const pending = testCases.filter(t=>t.status==='pending').length;
+  const summaryData = [
+    ['QA TestRun — Execution Report'],
+    ['Generated', new Date().toLocaleString()],
+    [],
+    ['Metric', 'Count', '%'],
+    ['Total', testCases.length, '100%'],
+    ['Pass', pass, Math.round(pass/testCases.length*100)+'%'],
+    ['Fail', fail, Math.round(fail/testCases.length*100)+'%'],
+    ['Skip', skip, Math.round(skip/testCases.length*100)+'%'],
+    ['Pending', pending, Math.round(pending/testCases.length*100)+'%'],
+  ];
+  const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
+  XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
+
+  // Results sheet
+  const wsData = XLSX.utils.json_to_sheet(getExportData());
+  XLSX.utils.book_append_sheet(wb, wsData, 'Test Results');
+
+  // Failed only
+  const failed = testCases.filter(t=>t.status==='fail');
+  if (failed.length) {
+    const wsF = XLSX.utils.json_to_sheet(failed.map(tc => ({
+      'Test ID': tc.id, 'Title': tc.title, 'Module': tc.module,
+      'Priority': tc.priority, 'Notes': tc.notes||'', 'Steps': tc.steps||'',
+    })));
+    XLSX.utils.book_append_sheet(wb, wsF, 'Failed Cases');
+  }
+
+  XLSX.writeFile(wb, `test-results-${new Date().toISOString().slice(0,10)}.xlsx`);
+  showToast('Excel report exported', 'pass');
+}
+
+function exportCSV() {
+  if (!testCases.length) { showToast('No data to export', 'fail'); return; }
+  const data = getExportData();
+  const headers = Object.keys(data[0]);
+  const rows = data.map(r => headers.map(h => `"${String(r[h]||'').replace(/"/g,'""')}"`).join(','));
+  const csv = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `test-results-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  showToast('CSV exported', 'pass');
+}
+
+// ---- DEMO DATA ----
+function loadDemo() {
+  testCases = [
+    { _idx:0,  id:'TC-001', title:'User can register with valid email and password',    module:'Authentication', priority:'high',   steps:'1. Navigate to /register\n2. Enter valid email\n3. Enter password (min 8 chars)\n4. Click Register', expected:'User is registered and redirected to dashboard', precond:'App is running', status:'pending', notes:'', executedAt:null },
+    { _idx:1,  id:'TC-002', title:'Login fails with wrong password',                    module:'Authentication', priority:'high',   steps:'1. Go to /login\n2. Enter valid email\n3. Enter wrong password\n4. Click Login',                expected:'Error message: "Invalid credentials" shown',            precond:'Test user exists', status:'pending', notes:'', executedAt:null },
+    { _idx:2,  id:'TC-003', title:'Password reset email is sent',                       module:'Authentication', priority:'medium', steps:'1. Click Forgot Password\n2. Enter registered email\n3. Submit form',                             expected:'Email received within 2 minutes',                       precond:'Valid email configured', status:'pending', notes:'', executedAt:null },
+    { _idx:3,  id:'TC-004', title:'Add item to cart',                                   module:'Shopping Cart',  priority:'high',   steps:'1. Browse to product page\n2. Click Add to Cart\n3. View cart',                                   expected:'Item appears in cart with correct price',               precond:'User logged in', status:'pending', notes:'', executedAt:null },
+    { _idx:4,  id:'TC-005', title:'Remove item from cart',                              module:'Shopping Cart',  priority:'medium', steps:'1. Add item to cart\n2. Go to cart\n3. Click Remove',                                            expected:'Item is removed, total updates',                        precond:'Item in cart', status:'pending', notes:'', executedAt:null },
+    { _idx:5,  id:'TC-006', title:'Cart total updates when quantity changes',            module:'Shopping Cart',  priority:'medium', steps:'1. Add item to cart\n2. Change qty to 3\n3. Verify total',                                       expected:'Total = unit price × 3',                               precond:'Item in cart', status:'pending', notes:'', executedAt:null },
+    { _idx:6,  id:'TC-007', title:'Checkout with valid credit card',                    module:'Checkout',       priority:'high',   steps:'1. Go to checkout\n2. Enter shipping address\n3. Enter test card 4242-4242-4242-4242\n4. Submit', expected:'Order confirmed, email sent',                          precond:'Cart has items', status:'pending', notes:'', executedAt:null },
+    { _idx:7,  id:'TC-008', title:'Checkout fails with expired card',                   module:'Checkout',       priority:'high',   steps:'1. Go to checkout\n2. Enter expired card\n3. Submit',                                            expected:'Error: "Card expired" displayed',                      precond:'Cart has items', status:'pending', notes:'', executedAt:null },
+    { _idx:8,  id:'TC-009', title:'Apply valid coupon code',                            module:'Checkout',       priority:'medium', steps:'1. Go to cart\n2. Enter coupon SAVE10\n3. Apply',                                                expected:'10% discount applied to total',                        precond:'Coupon SAVE10 exists', status:'pending', notes:'', executedAt:null },
+    { _idx:9,  id:'TC-010', title:'Product search returns relevant results',            module:'Search',         priority:'medium', steps:'1. Type product name in search bar\n2. Press Enter',                                             expected:'Results list contains matching products',               precond:'Products exist in DB', status:'pending', notes:'', executedAt:null },
+    { _idx:10, id:'TC-011', title:'Search with no results shows empty state',           module:'Search',         priority:'low',    steps:'1. Search for "xyzabc123notexist"',                                                              expected:'"No results found" message shown',                     precond:'', status:'pending', notes:'', executedAt:null },
+    { _idx:11, id:'TC-012', title:'User profile page loads with correct info',          module:'Profile',        priority:'low',    steps:'1. Log in\n2. Go to /profile',                                                                   expected:'Name, email, and avatar visible and correct',          precond:'User logged in', status:'pending', notes:'', executedAt:null },
+  ];
+
+  document.getElementById('suites-section').style.display = '';
+  document.getElementById('sidebar-progress').style.display = '';
+  document.getElementById('export-bar').style.display = '';
+  document.getElementById('dash-title').textContent = 'Test Execution Dashboard';
+  document.getElementById('dash-subtitle').textContent = `${testCases.length} test cases loaded · Demo: E-Commerce App`;
+
+  activeSuite = 'all';
+  renderSuites();
+  renderTable();
+  updateStats();
+}
+
+// New dark-light
+
+// ---- THEME TOGGLE ----
+const themeBtn = document.getElementById('theme-toggle-btn');
+
+function setTheme(theme) {
+  if (theme === 'light') {
+    document.body.classList.add('light-theme');
+    themeBtn.innerHTML = '🌙 Dark';
+  } else {
+    document.body.classList.remove('light-theme');
+    themeBtn.innerHTML = '☀️ Light ';
+  }
+
+  localStorage.setItem('qa-theme', theme);
+}
+
+// Toggle click
+themeBtn.addEventListener('click', () => {
+  const isLight = document.body.classList.contains('light-theme');
+  setTheme(isLight ? 'dark' : 'light');
+});
+
+// Load saved theme
+const savedTheme = localStorage.getItem('qa-theme') || 'dark';
+setTheme(savedTheme);
+
+// Load demo on start
+loadDemo();
+</script>
+</body>
+</html>
